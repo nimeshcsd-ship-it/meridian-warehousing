@@ -1,0 +1,12 @@
+Before writing pipeline code, document your understanding of the entities in your project repository:  
+Fact Table: inventory (Grain: Snapshot per inv_date_sk, inv_item_sk, inv_warehouse_sk).
+   
+Conformed Dimensions:
+warehouse (Key: w_warehouse_sk).   item (Key: i_item_sk).   date_dim (Key: d_date_sk).   
+
+Row-Filter Dimension: warehouse.w_state (filters access to specific warehouse states).   
+
+Sensitive Columns to Mask: 
+item.i_wholesale_cost and derived total stock financial value.   
+
+Assigned Business Quota Constraint: Land data for one quarter only and keep batches small (a few thousand rows).

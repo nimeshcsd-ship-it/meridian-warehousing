@@ -1,0 +1,57 @@
+bundle:
+  name: meridian_t07
+
+variables:
+  catalog:
+    description: Target Unity Catalog
+    default: meridian_t07
+  trainee_id:
+    description: Trainee identifier
+    default: "07"
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+  prod:
+    mode: production
+    workspace:
+      root_path: /Workspace/Shared/${bundle.name}
+
+resources:
+  jobs:
+    meridian_t07_job:
+      name: meridian_t07_job
+      schedule:
+        quartz_cron_expression: "0 0 6 * * ?"
+        timezone_id: "UTC"
+        pause_status: PAUSED
+      tasks:
+        - task_key: 01_governance_setup
+          sql_task:
+            file:
+              path: 05_governance.sql
+        - task_key: 02_landing_simulator
+          depends_on:
+            - task_key: 01_governance_setup
+          notebook_task:
+            notebook_path: 01_landing_simulator
+        - task_key: 03_run_pipeline
+          depends_on:
+            - task_key: 02_landing_simulator
+          pipeline_task:
+            pipeline_id: meridian_t07_pipeline
+        - task_key: 04_build_gold_tables
+          depends_on:
+            - task_key: 03_run_pipeline
+          sql_task:
+            file:
+              path: 04_gold_pipeline.sql
+        - task_key: 05_quality_gate
+          depends_on:
+            - task_key: 04_build_gold_tables
+          sql_task:
+            file:
+              path: 06_quality_gate.sql
