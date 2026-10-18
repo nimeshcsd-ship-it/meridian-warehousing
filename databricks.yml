@@ -8,6 +8,9 @@ variables:
   trainee_id:
     description: Trainee identifier
     default: "07"
+  warehouse_id:
+    description: Dedicated SQL Warehouse ID for SQL tasks
+    default: "2ed58cedb078b04d"
 
 targets:
   dev:
@@ -31,27 +34,30 @@ resources:
       tasks:
         - task_key: 01_governance_setup
           sql_task:
+            warehouse_id: ${var.warehouse_id}
             file:
               path: 05_governance.sql
         - task_key: 02_landing_simulator
           depends_on:
             - task_key: 01_governance_setup
           notebook_task:
-            notebook_path: 01_landing_simulator
+            notebook_path: 01_landing_simulator.ipynb
         - task_key: 03_run_pipeline
           depends_on:
             - task_key: 02_landing_simulator
           pipeline_task:
-            pipeline_id: meridian_t07_pipeline
+            pipeline_id: 2596147e-a6da-4f68-a238-0257f1eee072
         - task_key: 04_build_gold_tables
           depends_on:
             - task_key: 03_run_pipeline
           sql_task:
+            warehouse_id: ${var.warehouse_id}
             file:
               path: 04_gold_pipeline.sql
         - task_key: 05_quality_gate
           depends_on:
             - task_key: 04_build_gold_tables
           sql_task:
+            warehouse_id: ${var.warehouse_id}
             file:
               path: 06_quality_gate.sql
