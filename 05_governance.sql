@@ -121,3 +121,48 @@ SET MASK meridian_t07.gov.fn_mask_financial;
 ALTER TABLE meridian_t07.silver.dim_item 
 ALTER COLUMN i_current_price 
 SET TAGS ('data_classification' = 'financial_confidential');
+
+
+-- =====================================================================
+-- ADD-ON: Column masking for i_product_name (product PII)
+-- =====================================================================
+
+-- 1. Column Masking UDF for STRING columns (product name)
+-- Only members of t07_pii_readers or t07_admins can see raw product names
+CREATE OR REPLACE FUNCTION meridian_t07.gov.fn_mask_product_name(val STRING)
+RETURN 
+    CASE 
+        WHEN is_account_group_member('t07_pii_readers') 
+          OR is_account_group_member('t07_admins') 
+        THEN val 
+        ELSE NULL 
+    END;
+
+-- 2. Attach the mask to i_product_name
+ALTER TABLE meridian_t07.silver.dim_item 
+ALTER COLUMN i_product_name 
+SET MASK meridian_t07.gov.fn_mask_product_name;
+
+-- 3. Tag the column for classification compliance
+ALTER TABLE meridian_t07.silver.dim_item 
+ALTER COLUMN i_product_name 
+SET TAGS ('data_classification' = 'product_name_pii');
+
+-- 4. Audit: all column masks now applied across the catalog
+SELECT 
+    table_catalog,
+    table_schema,
+    table_name,
+    column_name,
+    mask_name
+FROM meridian_t07.information_schema.column_masks
+WHERE table_catalog = 'meridian_t07';
+
+-- 5. Verify masking behavior for the current user
+SELECT 
+    i_item_sk, 
+    i_product_name, 
+    i_current_price, 
+    i_wholesale_cost 
+FROM meridian_t07.silver.dim_item 
+LIMIT 10;
