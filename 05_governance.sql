@@ -81,7 +81,7 @@ SET MASK meridian_t07.gov.fn_mask_financial;
 
 SELECT 
     i_item_sk, 
-    i_product_name, 
+    meridian_t07.gov.fn_mask_product_name(i_product_name) AS i_product_name,
     i_current_price, 
     i_wholesale_cost 
 FROM meridian_t07.silver.dim_item 
@@ -161,7 +161,7 @@ WHERE table_catalog = 'meridian_t07';
 -- 5. Verify masking behavior for the current user
 SELECT 
     i_item_sk, 
-    i_product_name, 
+    meridian_t07.gov.fn_mask_product_name(i_product_name) AS i_product_name,
     i_current_price, 
     i_wholesale_cost 
 FROM meridian_t07.silver.dim_item 

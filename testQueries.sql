@@ -61,3 +61,9 @@ INSERT INTO meridian_t07.gov.user_state_entitlements VALUES
 SELECT i_product_name, i_current_price, i_wholesale_cost 
 FROM meridian_t07.silver.dim_item 
 LIMIT 10;
+
+
+
+-- testing whether system tables are accessible in  workspace
+SELECT * FROM system.lakeflow.jobs LIMIT 5;
+SELECT * FROM system.billing.usage LIMIT 5;
